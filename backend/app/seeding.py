@@ -41,7 +41,7 @@ def seed_db():
             {"user_name": "Priya", "joined_at": date(2026, 1, 1), "left_at": None},
             {"user_name": "Meera", "joined_at": date(2026, 1, 1), "left_at": date(2026, 3, 31)},
             {"user_name": "Sam", "joined_at": date(2026, 4, 8), "left_at": None},
-            {"user_name": "Dev", "joined_at": date(2026, 2, 8), "left_at": date(2026, 3, 12)},
+            {"user_name": "Dev", "joined_at": date(2026, 2, 8), "left_at": date(2026, 3, 14)},
         ]
 
         for m_data in memberships_data:

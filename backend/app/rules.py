@@ -236,23 +236,28 @@ class MembershipRule(ValidationRule):
         
         # Payer membership check
         payer_user = db.query(models.User).filter_by(name=payer_canonical).first()
-        p_memb = db.query(models.GroupMembership).filter_by(group_id=group_id, user_id=payer_user.id).first()
-        
-        # If they have membership, verify date window
-        if p_memb:
-            if p_memb.joined_at > exp_date or (p_memb.left_at and p_memb.left_at < exp_date):
-                state["anomalies"].append(AnomalyResult(
-                    anomaly_type="MembershipRule",
-                    severity="medium",
-                    detected_value=f"Payer {payer_canonical} active {p_memb.joined_at} to {p_memb.left_at}, expense date {exp_date}",
-                    action_taken="flagged_payer_membership_violation",
-                    requires_approval=True
-                ))
+        if payer_user and not payer_user.is_guest:
+            p_memb = db.query(models.GroupMembership).filter_by(group_id=group_id, user_id=payer_user.id).first()
+            # If they have membership, verify date window
+            if p_memb:
+                if p_memb.joined_at > exp_date or (p_memb.left_at and p_memb.left_at < exp_date):
+                    state["anomalies"].append(AnomalyResult(
+                        anomaly_type="MembershipRule",
+                        severity="medium",
+                        detected_value=f"Payer {payer_canonical} active {p_memb.joined_at} to {p_memb.left_at}, expense date {exp_date}",
+                        action_taken="flagged_payer_membership_violation",
+                        requires_approval=True
+                    ))
 
         # Split members membership check
         active_splits = []
         for name in split_names:
             s_user = db.query(models.User).filter_by(name=name).first()
+            if s_user and s_user.is_guest:
+                # Guests are allowed to participate in splits
+                active_splits.append(name)
+                continue
+                
             s_memb = db.query(models.GroupMembership).filter_by(group_id=group_id, user_id=s_user.id).first()
             
             is_active = True
@@ -260,7 +265,7 @@ class MembershipRule(ValidationRule):
                 if s_memb.joined_at > exp_date or (s_memb.left_at and s_memb.left_at < exp_date):
                     is_active = False
             else:
-                # If they don't even have membership record (like Kabir guest), they are not active members
+                # If they don't even have membership record, they are not active members
                 is_active = False
 
             if not is_active:
