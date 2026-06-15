@@ -129,3 +129,25 @@ Handles names spelling variations.
 - `id` (INTEGER, Primary Key): Unique identifier.
 - `canonical_user_id` (INTEGER, Foreign Key -> `users.id`): Canonical user reference.
 - `alias_name` (VARCHAR, Unique, Indexed): Alternative spelling or name variation.
+
+## Anomaly Detection Engine
+
+The import pipeline runs a series of 13 validation rules in a specific order to catch and resolve anomalies.
+
+| Anomaly Type | Detecting Rule | Severity | Resolution Policy | Requires Review |
+|---|---|---|---|---|
+| Non-Member Participant | `ParticipantRule` | Low/Medium | Create guest user with `is_guest = True` if not found; flag user who has no group membership. | Yes |
+| Name Variation | `NameNormalizationRule` | Low | Trim whitespace and check `person_aliases`. Normalize to canonical name in database. | No |
+| Format Ambiguity / Unusual Date | `DateRule` | Medium | Parse to date. If format is ambiguous (e.g. `Mar-14` or `04-05-2026`), flag. | Yes |
+| Membership Violation | `MembershipRule` | High | Check if transaction date is within membership dates. Exclude inactive member from splits. | Yes |
+| Currency Conversion | `CurrencyRule` | Medium/Low | Apply fixed conversion rate (1 USD = 83 INR). If currency field is blank, default to INR and flag. | Yes (if empty) |
+| Settlement as Expense | `SettlementRule` | Medium | Match regex `X paid Y back`. If matched, create Settlement record instead of Expense, and **STOP** validation. | Yes |
+| Deposit as Expense | `DepositRule` | Low | Match description containing 'deposit'. If matched, create Deposit record, and **STOP** validation. | No |
+| Refund | `RefundRule` | Medium | Match description containing 'refund' and amount < 0. Set `is_refund = True`, look up prior expense by title overlap >= 0.5 to link. | Yes |
+| Negative Amount | `NegativeAmountRule` | Medium | Match amount < 0 without 'refund' keyword. Import as-is and **STOP** validation. | Yes |
+| Zero Amount | `ZeroAmountRule` | Medium | Flag transactions with amount == 0. Import as-is. | Yes |
+| Split Correctness | `SplitRule` | Medium/High | Validate splits (e.g. percentages sum to 100%, unequal sum to total, or ignore details if type is 'equal'). | Yes |
+| Duplicate Expense | `DuplicateRule` | High | Check for exact duplicate expenses (same group, date, payer, amount, title overlap >= 0.8). Flag second. | Yes |
+| Near Duplicate | `NearDuplicateRule` | High | Check for fuzzy duplicate (different amounts). Flag both. | Yes |
+| Missing Payer | (Validation Layer) | High | If payer field is empty, reject and skip row entirely. | Yes |
+
