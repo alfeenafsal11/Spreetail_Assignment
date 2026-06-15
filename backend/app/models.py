@@ -57,6 +57,8 @@ class Expense(Base):
     expense_date = Column(Date, nullable=False)
     is_refund = Column(Boolean, default=False, nullable=False)
     refund_of_expense_id = Column(Integer, ForeignKey("expenses.id", ondelete="SET NULL"), nullable=True)
+    import_session_id = Column(Integer, ForeignKey("import_sessions.id", ondelete="SET NULL"), nullable=True)
+    row_number = Column(Integer, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     group = relationship("Group", back_populates="expenses")
@@ -86,6 +88,8 @@ class Settlement(Base):
     amount = Column(Float, nullable=False)
     settlement_date = Column(Date, nullable=False)
     group_id = Column(Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False)
+    import_session_id = Column(Integer, ForeignKey("import_sessions.id", ondelete="SET NULL"), nullable=True)
+    row_number = Column(Integer, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     group = relationship("Group", back_populates="settlements")
@@ -100,6 +104,8 @@ class Deposit(Base):
     amount = Column(Float, nullable=False)
     deposit_date = Column(Date, nullable=False)
     group_id = Column(Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False)
+    import_session_id = Column(Integer, ForeignKey("import_sessions.id", ondelete="SET NULL"), nullable=True)
+    row_number = Column(Integer, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     group = relationship("Group", back_populates="deposits")

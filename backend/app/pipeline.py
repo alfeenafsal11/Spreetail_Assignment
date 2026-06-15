@@ -100,11 +100,15 @@ def run_import_pipeline(db: Session, csv_file_content: str, filename: str) -> in
             # If validation succeeded, create DB models based on what rules decided
             if state.get("settlement_to_create"):
                 settlement = state["settlement_to_create"]
+                settlement.import_session_id = import_session.id
+                settlement.row_number = row_num
                 db.add(settlement)
                 db.commit()
                 
             elif state.get("deposit_to_create"):
                 deposit = state["deposit_to_create"]
+                deposit.import_session_id = import_session.id
+                deposit.row_number = row_num
                 db.add(deposit)
                 db.commit()
                 
@@ -121,7 +125,9 @@ def run_import_pipeline(db: Session, csv_file_content: str, filename: str) -> in
                     paid_by=state["payer_user_id"],
                     expense_date=state["expense_date"],
                     is_refund=state.get("is_refund", False),
-                    refund_of_expense_id=state.get("refund_of_expense_id")
+                    refund_of_expense_id=state.get("refund_of_expense_id"),
+                    import_session_id=import_session.id,
+                    row_number=row_num
                 )
                 db.add(expense)
                 db.commit()

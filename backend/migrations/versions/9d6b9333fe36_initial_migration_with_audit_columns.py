@@ -1,8 +1,8 @@
-"""initial migration
+"""initial migration with audit columns
 
-Revision ID: d9ddd111d0b5
+Revision ID: 9d6b9333fe36
 Revises: 
-Create Date: 2026-06-15 09:24:18.257679
+Create Date: 2026-06-15 09:43:24.091855
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'd9ddd111d0b5'
+revision: str = '9d6b9333fe36'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -67,8 +67,11 @@ def upgrade() -> None:
     sa.Column('amount', sa.Float(), nullable=False),
     sa.Column('deposit_date', sa.Date(), nullable=False),
     sa.Column('group_id', sa.Integer(), nullable=False),
+    sa.Column('import_session_id', sa.Integer(), nullable=True),
+    sa.Column('row_number', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['group_id'], ['groups.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['import_session_id'], ['import_sessions.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
@@ -86,8 +89,11 @@ def upgrade() -> None:
     sa.Column('expense_date', sa.Date(), nullable=False),
     sa.Column('is_refund', sa.Boolean(), nullable=False),
     sa.Column('refund_of_expense_id', sa.Integer(), nullable=True),
+    sa.Column('import_session_id', sa.Integer(), nullable=True),
+    sa.Column('row_number', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['group_id'], ['groups.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['import_session_id'], ['import_sessions.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['paid_by'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['refund_of_expense_id'], ['expenses.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
@@ -120,8 +126,11 @@ def upgrade() -> None:
     sa.Column('amount', sa.Float(), nullable=False),
     sa.Column('settlement_date', sa.Date(), nullable=False),
     sa.Column('group_id', sa.Integer(), nullable=False),
+    sa.Column('import_session_id', sa.Integer(), nullable=True),
+    sa.Column('row_number', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['group_id'], ['groups.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['import_session_id'], ['import_sessions.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['payer_id'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['receiver_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
