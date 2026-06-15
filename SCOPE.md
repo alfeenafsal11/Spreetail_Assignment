@@ -151,3 +151,12 @@ The import pipeline runs a series of 13 validation rules in a specific order to 
 | Near Duplicate | `NearDuplicateRule` | High | Check for fuzzy duplicate (different amounts). Flag both. | Yes |
 | Missing Payer | (Validation Layer) | High | If payer field is empty, reject and skip row entirely. | Yes |
 
+## Net Balances and Optimization Reconciliation
+
+The sum of all net balances in "The Flat" group is exactly **+14,636.00 INR**. This net surplus has two causes:
+1. **Sam's Deposit (+15,000.00 INR):** Converted to a deposit on Row 38. A deposit represents cash paid into the group's shared pool. It increases Sam's net balance directly without a matching user debt decrease (as it resides in the shared pool).
+2. **110% Split Mismatches (-364.00 INR):** Two percentage split rows sum to 110% instead of 100%. Row 15 Pizza Friday (1,440.00 INR total, 10% mismatch = `-144.00 INR`) and Row 32 Weekend brunch (2,200.00 INR total, 10% mismatch = `-220.00 INR`). This results in +364 INR more owed in splits than the actual expenses paid, creating a `-364.00 INR` total reduction.
+
+Reconciliation: `+15,000.00 INR (deposit) - 364.00 INR (mismatches) = +14,636.00 INR`.
+
+Because the net balance sum is non-zero, the settlement optimizer cannot fully zero out all user balances (there will be a net surplus of +14,636.00 INR reflecting the cash pool asset and the percentage split mismatch).

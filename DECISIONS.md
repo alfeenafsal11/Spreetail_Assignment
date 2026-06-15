@@ -53,3 +53,17 @@
 - **Alternatives:** Track deposits in a separate pool account.
 - **Chosen Solution:** Direct addition to net balance.
 - **Reason:** Simple and effective. It represents the member paying cash into the group's shared pool, which naturally offsets their future owed shares.
+
+## 10. Settlements Sign Adjustment in Net Balance Formula
+- **Decision:** Correct the net balance formula's settlement signs in code: `Net Balance = Expenses Paid - Amount Owed + Settlements Made - Settlements Received + Deposits Made - Refunds Received`.
+- **Alternatives:** Follow the plan's written signs literally: `- Settlements Made + Settlements Received`.
+- **Chosen Solution:** Swap the signs in code to `+ Settlements Made - Settlements Received`.
+- **Reason:** The written formula in the plan had swapped signs. If B owes A 25 INR, A is a creditor (+25) and B is a debtor (-25). If B pays A 25 INR (settlement), B makes a settlement (+25) and A receives a settlement (+25). B's balance should go to 0 (`-25 + 25 = 0`), and A's balance should go to 0 (`+25 - 25 = 0`). Swapping the signs is mathematically required for proper balance resolution.
+
+## 11. Non-Zero Total Balance Sum Reconciliation
+- **Decision:** Document and accept that the sum of all net user balances is exactly `+14,636.00 INR` instead of `0.00 INR`.
+- **Reason:** The sum is non-zero due to two factors:
+  1. **Sam's Deposit (+15,000.00 INR):** A deposit represents funds paid into the group's shared pool. Since the pool is an asset and not a user, this cash input increases Sam's credit by +15,000 INR without a matching user-balance decrease.
+  2. **110% Percentage Splits (-364.00 INR):** Two rows in the CSV have percentage splits summing to 110% instead of 100%: Row 15 Pizza Friday (1,440.00 INR total, 10% mismatch = `-144.00 INR`) and Row 32 Weekend brunch (2,200.00 INR total, 10% mismatch = `-220.00 INR`). These mismatches increase total Owed by +364 INR, resulting in a `-364.00 INR` balance reduction.
+  Reconciliation: `15,000.00 INR (deposit) - 364.00 INR (mismatches) = 14,636.00 INR`. Because of this non-zero sum, the settlement optimizer cannot fully zero out all user balances (a net surplus of +14,636.00 INR remains).
+
